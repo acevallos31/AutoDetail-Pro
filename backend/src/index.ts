@@ -19,7 +19,7 @@ async function bootstrap() {
 
     // Initialize database connection
     logger.info('📦 Initializing database connection...');
-    const db = await initializeDatabase();
+    await initializeDatabase();
     logger.info('✅ Database connected');
 
     // Create Express app

@@ -10,7 +10,7 @@ export function errorHandler(
   error: any,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) {
   logger.error('Unhandled error', {
     message: error.message,

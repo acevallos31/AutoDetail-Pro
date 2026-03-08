@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { appConfig } from '@shared/config/env-schema';
 import { errorHandler } from '@presentation/middleware/error-handler.middleware';
 import { requestLogger } from '@presentation/middleware/request-logger.middleware';
+import { v1Routes } from '@presentation/routes/v1';
 import { createLogger } from '@shared/utils/logger';
 
 const logger = createLogger('app');
@@ -31,7 +32,7 @@ export function createApp(): Express {
   app.use(requestLogger);
 
   // Health check
-  app.get('/health', (req, res) => {
+  app.get('/health', (_req, res) => {
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -39,14 +40,8 @@ export function createApp(): Express {
     });
   });
 
-  // API Routes (will be populated in Phase 4)
-  app.use(`/api/${appConfig.apiVersion}`, (req, res) => {
-    res.json({
-      message: 'AutoDetail Pro API',
-      version: appConfig.apiVersion,
-      status: 'coming soon',
-    });
-  });
+  // API Routes
+  app.use(`/api/${appConfig.apiVersion}`, v1Routes);
 
   // 404 handler
   app.use((req, res) => {
