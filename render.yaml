@@ -1,0 +1,70 @@
+services:
+  # Backend Service
+  - type: web
+    name: autodetail-pro-backend
+    runtime: node
+    plan: free
+    region: ohio
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: autodetail-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: autodetail-db
+          property: port
+      - key: DATABASE_USER
+        fromDatabase:
+          name: autodetail-db
+          property: user
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: autodetail-db
+          property: database
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: autodetail-db
+          property: password
+      - key: DATABASE_SSL
+        value: "true"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://autodetail-pro-frontend.onrender.com
+
+  # Frontend Service
+  - type: web
+    name: autodetail-pro-frontend
+    runtime: node
+    plan: free
+    region: ohio
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://autodetail-pro-backend.onrender.com/api
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+
+# Optional: PostgreSQL Database (comment out if using Supabase)
+# databases:
+#   - name: autodetail-db
+#     databaseName: autodetail_pro
+#     user: admin
+#     region: ohio
+#     plan: free
