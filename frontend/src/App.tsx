@@ -1,8 +1,44 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
+import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { ProtectedRoute } from './components/ProtectedRoute';
+
 export function App() {
+  const { isAuthenticated } = useAuthStore();
+
   return (
-    <main style={{ fontFamily: 'Segoe UI, sans-serif', padding: '2rem' }}>
-      <h1>AutoDetail Pro</h1>
-      <p>Frontend iniciado correctamente.</p>
-    </main>
+    <Routes>
+      {/* Login - accesible para no autenticados */}
+      <Route
+        path="/login"
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+      />
+
+      {/* Dashboard - solo para autenticados */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Ruta raíz - redirige según estado de autenticación */}
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+      {/* 404 */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
