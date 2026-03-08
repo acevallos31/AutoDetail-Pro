@@ -294,15 +294,6 @@ CREATE TABLE station_schedules (
   CHECK (NOT is_open OR closes_at > opens_at)
 );
 
-CREATE TABLE station_occupancy_log (
-  id SERIAL PRIMARY KEY,
-  station_id INTEGER NOT NULL REFERENCES stations(id) ON DELETE CASCADE,
-  work_order_id INTEGER REFERENCES work_orders(id) ON DELETE SET NULL,
-  occupied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  released_at TIMESTAMP,
-  notes TEXT
-);
-
 -- ============================================================================
 -- SCHEDULING & APPOINTMENTS (CRITICAL TRANSACTIONAL)
 -- ============================================================================
@@ -402,6 +393,15 @@ CREATE TABLE work_order_services (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CHECK (actual_duration_minutes IS NULL OR actual_duration_minutes > 0),
   CHECK (completed_at IS NULL OR started_at IS NULL OR completed_at >= started_at)
+);
+
+CREATE TABLE station_occupancy_log (
+  id SERIAL PRIMARY KEY,
+  station_id INTEGER NOT NULL REFERENCES stations(id) ON DELETE CASCADE,
+  work_order_id INTEGER REFERENCES work_orders(id) ON DELETE SET NULL,
+  occupied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  released_at TIMESTAMP,
+  notes TEXT
 );
 
 -- ============================================================================

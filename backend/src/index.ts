@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { appConfig } from '@shared/config/env-schema';
 import { createLogger } from '@shared/utils/logger';
 import { initializeDatabase } from '@infrastructure/database/postgresql/connection';
+import { initializeSupabase, testSupabaseConnection } from '@infrastructure/database/supabase/client';
 import { createApp } from './app';
 
 const logger = createLogger('main');
@@ -17,10 +18,22 @@ async function bootstrap() {
       port: appConfig.port,
     });
 
-    // Initialize database connection
-    logger.info('📦 Initializing database connection...');
+    // Initialize Supabase client
+    logger.info('🔌 Initializing Supabase client...');
+    initializeSupabase();
+    logger.info('✅ Supabase client initialized');
+
+    // Initialize database connection (PostgreSQL via Knex)
+    logger.info('📦 Initializing PostgreSQL connection...');
     await initializeDatabase();
-    logger.info('✅ Database connected');
+    logger.info('✅ PostgreSQL connected');
+
+    // Test Supabase connection
+    logger.info('🧪 Testing Supabase connection...');
+    const supabaseOk = await testSupabaseConnection();
+    if (!supabaseOk) {
+      logger.warn('⚠️ Supabase connection test failed, but continuing...');
+    }
 
     // Create Express app
     const app = createApp();
@@ -28,8 +41,11 @@ async function bootstrap() {
     // Start server
     app.listen(appConfig.port, () => {
       logger.info(`✅ Server running on http://localhost:${appConfig.port}`);
-      logger.info(`📚 Docs: http://localhost:${appConfig.port}/api-docs`);
+      logger.info(`📚 API Version: ${appConfig.apiVersion}`);
       logger.info(`🔗 Frontend: ${appConfig.frontendUrl}`);
+      logger.info('📊 Database Status:');
+      logger.info(`   - PostgreSQL (Knex): ✅ Connected`);
+      logger.info(`   - Supabase Client: ${supabaseOk ? '✅' : '⚠️'} ${supabaseOk ? 'Ready' : 'Failed'}`);
     });
   } catch (error) {
     logger.error('💥 Fatal error during bootstrap', error);

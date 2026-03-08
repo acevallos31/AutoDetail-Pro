@@ -15,10 +15,29 @@ const logger = createLogger('app');
 export function createApp(): Express {
   const app = express();
 
+  // Allow configured origins plus localhost/127.0.0.1 on any port (useful for Vite fallback ports).
+  const configuredOrigins = appConfig.corsOrigin
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  const localhostPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
   // Security middleware
   app.use(helmet());
   app.use(cors({
-    origin: appConfig.corsOrigin,
+    origin: (origin, callback) => {
+      // Allow non-browser requests (curl/postman/server-to-server).
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (configuredOrigins.includes(origin) || localhostPattern.test(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS origin not allowed: ${origin}`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

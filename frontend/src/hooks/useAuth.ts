@@ -6,7 +6,10 @@ interface LoginCredentials {
   password: string;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const rawApiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+const API_BASE_URL = rawApiBase
+  ? (rawApiBase.endsWith('/api') ? rawApiBase : `${rawApiBase}/api`)
+  : '/api';
 
 export const useAuth = () => {
   const [isValidating, setIsValidating] = useState(false);

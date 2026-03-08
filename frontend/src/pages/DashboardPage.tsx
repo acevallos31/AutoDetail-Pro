@@ -1,109 +1,309 @@
-import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Calendar, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { RootLayout } from '../shared/layouts/RootLayout';
+import { Card, Badge } from '../shared';
+import { colors, spacing, typography, shadows, borderRadius } from '../shared/design/tokens';
 
 export const DashboardPage = () => {
-  const navigate = useNavigate();
-  const { user, accessToken, logout } = useAuthStore();
+  const { user } = useAuthStore();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
-  };
+  const stats = [
+    {
+      title: 'Citas Hoy',
+      value: '12',
+      change: '+12%',
+      icon: Calendar,
+      bgGradient: `linear-gradient(135deg, ${colors.primaryLight}20 0%, ${colors.accentLight}20 100%)`,
+    },
+    {
+      title: 'Ingresos Semanal',
+      value: '$3,250',
+      change: '+8%',
+      icon: DollarSign,
+      bgGradient: `linear-gradient(135deg, ${colors.success}20 0%, ${colors.success}20 100%)`,
+    },
+    {
+      title: 'Clientes',
+      value: '48',
+      change: '+15%',
+      icon: Users,
+      bgGradient: `linear-gradient(135deg, ${colors.warning}20 0%, ${colors.warning}20 100%)`,
+    },
+    {
+      title: 'Ingresos Mensual',
+      value: '$12,500',
+      change: '+23%',
+      icon: TrendingUp,
+      bgGradient: `linear-gradient(135deg, ${colors.info}20 0%, ${colors.primary}20 100%)`,
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">
-            AutoDetail Pro - Dashboard
-          </h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-200"
+    <RootLayout>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
+        {/* Welcome Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2
+            style={{
+              fontSize: typography.fontSize['3xl'],
+              fontWeight: 700,
+              color: colors.textDark,
+              margin: 0,
+            }}
           >
-            Cerrar Sesión
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* User Info Card */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Información de Usuario
+            ¡Bienvenido, {user?.name || 'Usuario'}!
           </h2>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="text-lg font-medium text-gray-900">{user?.email}</p>
-            </div>
-            {user?.name && (
-              <div>
-                <p className="text-sm text-gray-500">Nombre</p>
-                <p className="text-lg font-medium text-gray-900">{user.name}</p>
-              </div>
-            )}
-            {user?.role && (
-              <div>
-                <p className="text-sm text-gray-500">Rol</p>
-                <p className="text-lg font-medium text-gray-900">{user.role}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Token Info */}
-        <div className="bg-gray-900 rounded-lg shadow p-6 mb-8 text-white">
-          <h2 className="text-xl font-semibold mb-4">
-            Token de Acceso
-          </h2>
-          <div className="bg-gray-800 p-4 rounded overflow-auto max-h-32">
-            <code className="text-sm font-mono text-green-400 break-all">
-              {accessToken || 'No disponible'}
-            </code>
-          </div>
-          <p className="text-xs text-gray-400 mt-2">
-            Este token se envía en el header Authorization para acceder a endpoints protegidos
+          <p
+            style={{
+              fontSize: typography.fontSize.base,
+              color: colors.textMuted,
+              marginTop: spacing.sm,
+              margin: 0,
+            }}
+          >
+            Aquí puedes gestionar tu negocio de detallado automotriz
           </p>
+        </motion.div>
+
+        {/* Stats Grid */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: `${spacing.lg}`,
+          }}
+        >
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                style={{
+                  background: stat.bgGradient,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '12px',
+                  padding: spacing.lg,
+                  cursor: 'pointer',
+                  transition: 'all 200ms ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = shadows.lg;
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <p
+                      style={{
+                        fontSize: typography.fontSize.sm,
+                        color: colors.textMuted,
+                        margin: 0,
+                        marginBottom: spacing.sm,
+                      }}
+                    >
+                      {stat.title}
+                    </p>
+                    <h3
+                      style={{
+                        fontSize: typography.fontSize['3xl'],
+                        fontWeight: 700,
+                        color: colors.textDark,
+                        margin: 0,
+                        marginBottom: spacing.sm,
+                      }}
+                    >
+                      {stat.value}
+                    </h3>
+                    <span
+                      style={{
+                        fontSize: typography.fontSize.sm,
+                        color: colors.success,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {stat.change}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '12px',
+                      background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: colors.textWhite,
+                    }}
+                  >
+                    <Icon size={24} />
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {/* Features Coming Soon */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {['Clientes', 'Citas', 'Servicios'].map((feature) => (
-            <div
-              key={feature}
-              className="bg-white rounded-lg shadow p-6 text-center"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {feature}
+        {/* User Info & Recent Activity */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: spacing.lg,
+          }}
+        >
+          {/* User Info */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.lg,
+                  marginBottom: spacing.lg,
+                }}
+              >
+                <div
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '12px',
+                    background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: colors.textWhite,
+                    fontSize: typography.fontSize['2xl'],
+                    fontWeight: 700,
+                  }}
+                >
+                  {user?.email?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p
+                    style={{
+                      fontSize: typography.fontSize.base,
+                      fontWeight: 600,
+                      color: colors.textDark,
+                      margin: 0,
+                    }}
+                  >
+                    {user?.name || user?.email}
+                  </p>
+                  {user?.role && (
+                    <Badge variant="primary" size="sm">
+                      {user.role}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <div
+                style={{
+                  borderTop: `1px solid ${colors.border}`,
+                  paddingTop: spacing.lg,
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: typography.fontSize.sm,
+                    color: colors.textMuted,
+                    margin: '0 0 ' + spacing.sm + ' 0',
+                  }}
+                >
+                  Email
+                </p>
+                <p
+                  style={{
+                    fontSize: typography.fontSize.base,
+                    fontWeight: 500,
+                    color: colors.textDark,
+                    margin: 0,
+                  }}
+                >
+                  {user?.email}
+                </p>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* Quick Actions */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card>
+              <h3
+                style={{
+                  fontSize: typography.fontSize.lg,
+                  fontWeight: 600,
+                  color: colors.textDark,
+                  margin: '0 0 ' + spacing.lg + ' 0',
+                }}
+              >
+                Acciones Rápidas
               </h3>
-              <p className="text-gray-500 text-sm">
-                Próximamente en Phase 4
-              </p>
-            </div>
-          ))}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: spacing.md,
+                }}
+              >
+                {['Nueva Cita', 'Agregar Cliente', 'Ver Reportes'].map((action) => (
+                  <motion.button
+                    key={action}
+                    whileHover={{ x: 4 }}
+                    style={{
+                      padding: spacing.md,
+                      backgroundColor: colors.backgroundLight,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: borderRadius.lg,
+                      cursor: 'pointer',
+                      fontSize: typography.fontSize.sm,
+                      fontWeight: 600,
+                      color: colors.primary,
+                      transition: 'all 200ms ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.primaryLight + '15';
+                      e.currentTarget.style.borderColor = colors.primary;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.backgroundLight;
+                      e.currentTarget.style.borderColor = colors.border;
+                    }}
+                  >
+                    {action}
+                  </motion.button>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
         </div>
-
-        {/* Debug Info */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mt-8">
-          <h3 className="text-sm font-semibold text-yellow-800 mb-2">
-            ℹ️ Información de Depuración
-          </h3>
-          <pre className="text-xs bg-white p-3 rounded border border-yellow-300 overflow-auto max-h-48">
-            {JSON.stringify(
-              {
-                user,
-                isAuthenticated: true,
-                tokenLength: accessToken?.length || 0,
-              },
-              null,
-              2
-            )}
-          </pre>
-        </div>
-      </main>
-    </div>
+      </div>
+    </RootLayout>
   );
 };
