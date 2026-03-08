@@ -25,7 +25,9 @@ export const Input = ({
     border: `1px solid ${error ? colors.error : colors.borderDark}`,
     fontSize: typography.fontSize.base,
     transition: 'all 200ms ease',
-    fontFamily: 'inherit',
+    fontFamily: typography.fontFamily?.body || 'inherit',
+    color: colors.textDark,
+    boxShadow: 'inset 0 1px 2px rgba(15, 23, 42, 0.04)',
     outline: 'none',
   };
 
@@ -35,12 +37,13 @@ export const Input = ({
     fontWeight: 600,
     color: colors.textLight,
     marginBottom: spacing.sm,
+    fontFamily: typography.fontFamily?.display,
   };
 
   const errorStyles: CSSProperties = {
     marginTop: spacing.xs,
     fontSize: typography.fontSize.sm,
-    color: colors.error[600],
+    color: colors.error,
   };
 
   const helperStyles: CSSProperties = {
@@ -66,7 +69,7 @@ export const Input = ({
           style={{
             ...inputStyles,
             ...style,
-            backgroundColor: props.disabled ? colors.backgroundLight : colors.background,
+            backgroundColor: props.disabled ? colors.backgroundLight : 'rgba(255, 255, 255, 0.9)',
             cursor: props.disabled ? 'not-allowed' : 'auto',
           }}
           className={className}

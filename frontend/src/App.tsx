@@ -3,6 +3,9 @@ import { useAuthStore } from './store/authStore';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
+import { AppointmentsPage } from './pages/AppointmentsPage';
+import { ServicesPage } from './pages/ServicesPage';
+import { ClientsPage } from './pages/ClientsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export function App() {
@@ -32,6 +35,33 @@ export function App() {
         element={
           <ProtectedRoute>
             <AnalyticsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/appointments"
+        element={
+          <ProtectedRoute>
+            <AppointmentsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/services"
+        element={
+          <ProtectedRoute>
+            <ServicesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/clients"
+        element={
+          <ProtectedRoute>
+            <ClientsPage />
           </ProtectedRoute>
         }
       />

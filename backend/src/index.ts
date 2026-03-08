@@ -3,7 +3,6 @@ import { appConfig } from '@shared/config/env-schema';
 import { createLogger } from '@shared/utils/logger';
 import { initializeDatabase } from '@infrastructure/database/postgresql/connection';
 import { initializeSupabase, testSupabaseConnection } from '@infrastructure/database/supabase/client';
-import { createApp } from './app';
 
 const logger = createLogger('main');
 
@@ -35,7 +34,8 @@ async function bootstrap() {
       logger.warn('⚠️ Supabase connection test failed, but continuing...');
     }
 
-    // Create Express app
+    // Create Express app after database is initialized so route modules can safely access repositories.
+    const { createApp } = await import('./app');
     const app = createApp();
 
     // Start server

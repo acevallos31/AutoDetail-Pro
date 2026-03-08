@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { CSSProperties } from 'react';
-import { colors, shadows, spacing, typography } from '../design/tokens';
+import { colors, spacing, typography } from '../design/tokens';
 
 interface HeaderProps {
   title?: string;
@@ -23,7 +23,8 @@ export const Header = ({ title = 'AutoDetail Pro', onToggleSidebar }: HeaderProp
     left: 0,
     right: 0,
     height: '64px',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(255, 255, 255, 0.86)',
+    backdropFilter: 'blur(8px)',
     borderBottomColor: colors.border,
     borderBottomWidth: 1,
     borderBottomStyle: 'solid',
@@ -49,6 +50,8 @@ export const Header = ({ title = 'AutoDetail Pro', onToggleSidebar }: HeaderProp
     fontSize: typography.fontSize['2xl'],
     fontWeight: 700,
     color: colors.textDark,
+    fontFamily: typography.fontFamily?.display,
+    letterSpacing: '-0.02em',
   };
 
   const buttonStyles: CSSProperties = {
@@ -82,7 +85,7 @@ export const Header = ({ title = 'AutoDetail Pro', onToggleSidebar }: HeaderProp
     width: '40px',
     height: '40px',
     borderRadius: '50%',
-    background: `linear-gradient(135deg, ${colors.primary[400]} 0%, ${colors.primary[600]} 100%)`,
+    background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -96,7 +99,7 @@ export const Header = ({ title = 'AutoDetail Pro', onToggleSidebar }: HeaderProp
     paddingRight: spacing.lg,
     paddingTop: spacing.sm,
     paddingBottom: spacing.sm,
-    color: colors.error[600],
+    color: colors.error,
     backgroundColor: 'transparent',
     border: 'none',
     borderRadius: '8px',

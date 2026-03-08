@@ -76,6 +76,10 @@ export const spacing = {
 };
 
 export const typography = {
+  fontFamily: {
+    display: "'Outfit', 'Segoe UI', sans-serif",
+    body: "'Plus Jakarta Sans', 'Segoe UI', sans-serif",
+  },
   fontSize: {
     xs: '12px',
     sm: '14px',
@@ -92,6 +96,11 @@ export const typography = {
     medium: 500,
     semibold: 600,
     bold: 700,
+  },
+  lineHeight: {
+    tight: 1.2,
+    base: 1.5,
+    relaxed: 1.65,
   },
 };
 
@@ -111,10 +120,11 @@ export const shadows = {
   sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
   default: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
   md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-  lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-  xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+  lg: '0 14px 30px -12px rgba(15, 23, 42, 0.18), 0 6px 12px -8px rgba(15, 23, 42, 0.14)',
+  xl: '0 26px 40px -18px rgba(15, 23, 42, 0.26), 0 14px 20px -12px rgba(15, 23, 42, 0.18)',
   '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
   blue: '0 0 20px rgba(3, 132, 199, 0.3)',
+  glow: '0 10px 35px -10px rgba(2, 132, 199, 0.42)',
 };
 
 export const transitions = {

@@ -48,10 +48,27 @@ export const DashboardPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          <span
+            style={{
+              display: 'inline-flex',
+              marginBottom: spacing.sm,
+              padding: '6px 10px',
+              borderRadius: borderRadius.full,
+              backgroundColor: colors.infoBg,
+              color: colors.primaryDark,
+              fontSize: typography.fontSize.xs,
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+            }}
+          >
+            RESUMEN OPERATIVO
+          </span>
           <h2
             style={{
               fontSize: typography.fontSize['3xl'],
               fontWeight: 700,
+              fontFamily: typography.fontFamily.display,
+              letterSpacing: '-0.02em',
               color: colors.textDark,
               margin: 0,
             }}
@@ -89,10 +106,11 @@ export const DashboardPage = () => {
                 style={{
                   background: stat.bgGradient,
                   border: `1px solid ${colors.border}`,
-                  borderRadius: '12px',
+                  borderRadius: borderRadius.xl,
                   padding: spacing.lg,
                   cursor: 'pointer',
                   transition: 'all 200ms ease',
+                  boxShadow: shadows.sm,
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.boxShadow = shadows.lg;
@@ -125,6 +143,7 @@ export const DashboardPage = () => {
                       style={{
                         fontSize: typography.fontSize['3xl'],
                         fontWeight: 700,
+                        fontFamily: typography.fontFamily.display,
                         color: colors.textDark,
                         margin: 0,
                         marginBottom: spacing.sm,

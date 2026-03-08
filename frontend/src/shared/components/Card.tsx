@@ -27,18 +27,20 @@ export const Card = ({
     switch (variant) {
       case 'elevated':
         return {
-          backgroundColor: colors.backgroundLight,
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(248,250,252,0.98) 100%)',
           boxShadow: shadows.lg,
+          border: `1px solid ${colors.border}`,
         };
       case 'outlined':
         return {
-          backgroundColor: colors.background,
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
           border: `2px solid ${colors.primaryLight}`,
         };
       default:
         return {
-          backgroundColor: colors.background,
+          backgroundColor: 'rgba(255, 255, 255, 0.92)',
           border: `1px solid ${colors.border}`,
+          boxShadow: shadows.sm,
         };
     }
   };
@@ -49,8 +51,9 @@ export const Card = ({
     padding: paddingMap[padding],
     ...getVariantStyles(),
     ...(hover && {
-      boxShadow: shadows['lg'],
-      borderColor: colors.primary[300],
+      boxShadow: shadows.lg,
+      borderColor: colors.primaryLight,
+      transform: 'translateY(-2px)',
     }),
     ...style,
   };

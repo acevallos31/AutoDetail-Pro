@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: autodetail-pro-backend
+    runtime: node
+    plan: free
+    region: ohio
+    rootDir: backend
+    
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    
+    envVars:
+      # Node Environment
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      
+      # Database Configuration (Supabase PostgreSQL)
+      - key: DATABASE_HOST
+        sync: false
+      - key: DATABASE_PORT
+        value: 5432
+      - key: DATABASE_NAME
+        value: postgres
+      - key: DATABASE_USER
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: DATABASE_SSL
+        value: "true"
+      
+      # Supabase Client
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      
+      # CORS Configuration
+      - key: CORS_ORIGIN
+        value: "https://autodetail-pro.vercel.app"
+      
+      # API Configuration
+      - key: API_VERSION
+        value: "v1"
+      - key: LOG_LEVEL
+        value: info

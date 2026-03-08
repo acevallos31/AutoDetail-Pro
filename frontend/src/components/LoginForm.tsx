@@ -1,6 +1,6 @@
 import { useState, FormEvent, CSSProperties } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Input, Button } from '../shared';
+import { Input } from '../shared';
 import { colors, spacing, typography, borderRadius, shadows } from '../shared/design/tokens';
 import { motion } from 'framer-motion';
 import { Car, LogIn } from 'lucide-react';
@@ -21,11 +21,12 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   };
 
   const cardStyles: CSSProperties = {
-    background: colors.background,
-    borderRadius: borderRadius.xl,
+    background: 'linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(248,250,252,0.95) 100%)',
+    borderRadius: borderRadius['2xl'],
     boxShadow: shadows.xl,
     padding: spacing['3xl'],
     border: `1px solid ${colors.border}`,
+    backdropFilter: 'blur(8px)',
   };
 
   const logoContainerStyles: CSSProperties = {
@@ -49,6 +50,8 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const titleStyles: CSSProperties = {
     fontSize: typography.fontSize['3xl'],
     fontWeight: typography.fontWeight.bold,
+    fontFamily: typography.fontFamily.display,
+    letterSpacing: '-0.03em',
     background: `linear-gradient(to right, ${colors.primary}, ${colors.accent})`,
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
@@ -59,6 +62,7 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const subtitleStyles: CSSProperties = {
     fontSize: typography.fontSize.sm,
     color: colors.textMuted,
+    lineHeight: typography.lineHeight.base,
   };
 
   const formStyles: CSSProperties = {
@@ -93,6 +97,7 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
     fontSize: typography.fontSize.xs,
     color: colors.textMuted,
     textAlign: 'center',
+    lineHeight: typography.lineHeight.base,
   };
 
   const submitButtonStyles: CSSProperties = {
@@ -107,6 +112,8 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
     borderRadius: borderRadius.lg,
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
+    fontFamily: typography.fontFamily.display,
+    letterSpacing: '-0.01em',
     cursor: isValidating ? 'not-allowed' : 'pointer',
     boxShadow: `0 10px 25px -5px rgba(6, 182, 212, 0.3)`,
     transition: 'all 0.2s',

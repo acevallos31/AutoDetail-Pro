@@ -1,4 +1,6 @@
 import { LabelHTMLAttributes } from 'react';
+import { CSSProperties } from 'react';
+import { colors, typography } from '../design/tokens';
 
 interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
   required?: boolean;
@@ -10,13 +12,23 @@ export const Label = ({
   className = '',
   ...props
 }: LabelProps) => {
+  const labelStyle: CSSProperties = {
+    display: 'block',
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.textLight,
+    fontFamily: typography.fontFamily?.display,
+    letterSpacing: '-0.01em',
+  };
+
   return (
     <label
-      className={`block text-sm font-medium text-gray-700 ${className}`}
+      className={className}
+      style={labelStyle}
       {...props}
     >
       {children}
-      {required && <span className="text-red-600 ml-1">*</span>}
+      {required && <span style={{ color: colors.error, marginLeft: '4px' }}>*</span>}
     </label>
   );
 };

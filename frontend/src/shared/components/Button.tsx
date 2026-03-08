@@ -1,5 +1,5 @@
 import { ButtonHTMLAttributes, ReactNode, CSSProperties } from 'react';
-import { colors, spacing, typography, borderRadius, transitions } from '../design/tokens';
+import { colors, spacing, typography, borderRadius, transitions, shadows } from '../design/tokens';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
@@ -25,8 +25,8 @@ export const Button = ({
 }: ButtonProps) => {
   const getVariantStyles = (): CSSProperties => {
     const baseBackground = {
-      primary: colors.primary,
-      secondary: colors.backgroundLight,
+      primary: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
+      secondary: 'rgba(255, 255, 255, 0.88)',
       danger: colors.error,
       ghost: 'transparent',
     }[variant];
@@ -39,8 +39,10 @@ export const Button = ({
     }[variant];
 
     return {
-      backgroundColor: baseBackground,
+      background: baseBackground,
       color: baseColor,
+      boxShadow: variant === 'primary' ? shadows.glow : shadows.none,
+      border: variant === 'secondary' ? `1px solid ${colors.border}` : 'none',
     };
   };
 
@@ -55,6 +57,8 @@ export const Button = ({
 
   const baseStyles: CSSProperties = {
     fontWeight: 600,
+    fontFamily: typography.fontFamily?.display,
+    letterSpacing: '-0.01em',
     borderRadius: borderRadius.lg,
     border: 'none',
     cursor: disabled ? 'not-allowed' : 'pointer',
@@ -67,6 +71,7 @@ export const Button = ({
     transition: transitions.colors,
     width: isFullWidth ? '100%' : 'auto',
     outline: 'none',
+    backdropFilter: variant === 'secondary' ? 'blur(4px)' : undefined,
   };
 
   return (
