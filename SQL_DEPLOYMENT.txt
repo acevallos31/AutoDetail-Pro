@@ -1,0 +1,116 @@
+==============================================
+INSTRUCCIONES DE DEPLOYMENT SQL - AutoDetail Pro
+==============================================
+
+PASO 1: SCHEMA PRINCIPAL (001_initial_schema.sql)
+--------------------------------------------------
+
+1. Abre Supabase Dashboard: https://app.supabase.com
+2. Selecciona tu proyecto
+3. Click en "SQL Editor" (menú izquierdo)
+4. Click en "New Query"
+5. COPIA TODO EL CONTENIDO de: backend/migrations/001_initial_schema.sql
+6. PEGA en el SQL Editor
+7. Click en "RUN" (o presiona Ctrl+Enter)
+8. Espera ~30 segundos
+9. Deberías ver: "Success. No rows returned"
+
+✅ VERIFICAR: Ejecuta esta query para confirmar:
+   SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';
+   Resultado esperado: ~24 tablas
+
+
+PASO 2: SEED DATA (001_initial_data.sql)
+--------------------------------------------------
+
+1. En el mismo SQL Editor
+2. Click en "New Query" (nueva pestaña)
+3. COPIA TODO EL CONTENIDO de: backend/seeds/001_initial_data.sql
+4. PEGA en el SQL Editor
+5. Click en "RUN"
+6. Espera ~10 segundos
+7. Deberías ver: "Success. No rows returned"
+
+✅ VERIFICAR: Ejecuta estas queries:
+   SELECT COUNT(*) FROM services;           -- Debe retornar: 10
+   SELECT COUNT(*) FROM stations;           -- Debe retornar: 4
+   SELECT COUNT(*) FROM roles;              -- Debe retornar: 5 (pero NO creé la tabla roles aún!)
+   SELECT COUNT(*) FROM permissions;        -- Debe retornar: 24
+
+
+IMPORTANTE: ORDEN DE ROLES
+--------------------------------------------------
+¡ATENCIÓN! Encontré un error: el seed data asume que la tabla `roles` ya existe,
+pero NO la creé en el schema inicial.
+
+SOLUCIÓN: Antes de ejecutar 001_initial_data.sql, ejecuta esto:
+
+CREATE TABLE IF NOT EXISTS roles (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(50) UNIQUE NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+INSERT INTO roles (name, description) VALUES
+  ('admin', 'Full system access - Configuration and management'),
+  ('reception', 'Front desk operations - Appointments and check-in'),
+  ('operator', 'Service execution - Work orders and vehicle handling'),
+  ('supervisor', 'Operations oversight - Analytics and staff management'),
+  ('customer', 'Customer portal access - Booking and tracking');
+
+
+PASO 3: VERIFICAR TODO
+--------------------------------------------------
+
+Ejecuta esto en SQL Editor:
+
+-- 1. Listar todas las tablas
+SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;
+
+-- 2. Contar registros en tablas principales
+SELECT 
+  (SELECT COUNT(*) FROM roles) as roles_count,
+  (SELECT COUNT(*) FROM permissions) as permissions_count,
+  (SELECT COUNT(*) FROM services) as services_count,
+  (SELECT COUNT(*) FROM stations) as stations_count,
+  (SELECT COUNT(*) FROM service_categories) as categories_count;
+
+Resultado esperado:
+roles_count: 5
+permissions_count: 24
+services_count: 10
+stations_count: 4
+categories_count: 3
+
+
+ERRORES COMUNES Y SOLUCIONES
+--------------------------------------------------
+
+ERROR: "relation 'roles' does not exist"
+SOLUCIÓN: Ejecuta primero el CREATE TABLE roles mostrado arriba
+
+ERROR: "duplicate key value violates unique constraint"
+SOLUCIÓN: Ya ejecutaste el seed antes. Skip este paso.
+
+ERROR: "syntax error at or near..."
+SOLUCIÓN: Asegúrate de copiar TODO el archivo sin modificar
+         No copies solo parte, copia desde la primera línea hasta la última
+
+ERROR: "appointment_datetime must be in the future"
+SOLUCIÓN: Elimina temporalmente ese CHECK constraint:
+  ALTER TABLE appointments DROP CONSTRAINT IF EXISTS chk_appointment_future;
+
+
+DESPUÉS DEL DEPLOYMENT SQL
+--------------------------------------------------
+
+1. Backend ya tiene node_modules instalados ✅
+2. Frontend ya tiene node_modules instalados ✅
+3. SQL importado ✅
+
+PRÓXIMO PASO: Iniciar servidores
+
+cd backend && npm run dev    # Terminal 1
+cd frontend && npm run dev   # Terminal 2
