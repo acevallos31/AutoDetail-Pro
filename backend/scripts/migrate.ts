@@ -22,7 +22,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import 'dotenv/config';
-import { createClient } from '@supabase/supabase-js';
 import { Pool } from 'pg';
 import chalk from 'chalk';
 
@@ -36,14 +35,9 @@ interface MigrationFile {
 class MigrationRunner {
   private migrations: MigrationFile[] = [];
   private pool: Pool;
-  private supabaseUrl: string;
-  private supabaseKey: string;
 
   constructor() {
     this.validateEnv();
-    
-    this.supabaseUrl = process.env.SUPABASE_URL || '';
-    this.supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
     this.pool = new Pool({
       host: process.env.DB_HOST,
@@ -85,8 +79,8 @@ class MigrationRunner {
     // Schema migrations
     const schemaMigrations = fs
       .readdirSync(migrationsDir)
-      .filter((f) => f.startsWith('001_') && f.endsWith('.sql'))
-      .map((name) => ({
+      .filter((f: string) => f.startsWith('001_') && f.endsWith('.sql'))
+      .map((name: string) => ({
         name,
         order: parseInt(name.match(/\d+/)?.[0] || '999'),
         type: 'schema' as const,
@@ -96,8 +90,8 @@ class MigrationRunner {
     // Seed migrations
     const seedMigrations = fs
       .readdirSync(seedsDir)
-      .filter((f) => f.startsWith('001_') && f.endsWith('.sql'))
-      .map((name) => ({
+      .filter((f: string) => f.startsWith('001_') && f.endsWith('.sql'))
+      .map((name: string) => ({
         name,
         order: parseInt(name.match(/\d+/)?.[0] || '999'),
         type: 'seed' as const,
@@ -107,8 +101,8 @@ class MigrationRunner {
     // Logic layer migrations
     const logicMigrations = fs
       .readdirSync(migrationsDir)
-      .filter((f) => f.startsWith('002_') && f.endsWith('.sql'))
-      .map((name) => ({
+      .filter((f: string) => f.startsWith('002_') && f.endsWith('.sql'))
+      .map((name: string) => ({
         name,
         order: parseInt(name.match(/\d+/)?.[0] || '999'),
         type: 'logic' as const,
@@ -136,7 +130,7 @@ class MigrationRunner {
   private readMigration(filePath: string): string {
     try {
       return fs.readFileSync(filePath, 'utf-8');
-    } catch (error) {
+    } catch {
       throw new Error(`Failed to read migration file: ${filePath}`);
     }
   }
@@ -154,7 +148,7 @@ class MigrationRunner {
       console.log(`\n${icon} Executing: ${chalk.cyan(migration.name)}`);
 
       // Execute using pool (direct connection)
-      const result = await this.pool.query(sql);
+      await this.pool.query(sql);
 
       console.log(chalk.green(`   ✅ Success`));
       return true;

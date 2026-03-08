@@ -7,9 +7,7 @@ interface LoginCredentials {
 }
 
 const rawApiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
-const API_BASE_URL = rawApiBase
-  ? (rawApiBase.endsWith('/api') ? rawApiBase : `${rawApiBase}/api`)
-  : '/api';
+const API_BASE_URL = rawApiBase || 'http://localhost:3000/api/v1';
 
 export const useAuth = () => {
   const [isValidating, setIsValidating] = useState(false);
@@ -20,7 +18,7 @@ export const useAuth = () => {
     clearError();
 
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),

@@ -6,6 +6,7 @@ export { Input } from './components/Input';
 export { Label } from './components/Label';
 export { Header } from './components/Header';
 export { Sidebar } from './components/Sidebar';
+export { Modal } from './components/Modal';
 
 // Layouts
 export { AuthLayout } from './layouts/AuthLayout';

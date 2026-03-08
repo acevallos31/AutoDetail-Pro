@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import type { Server } from 'node:http';
 import { appConfig } from '@shared/config/env-schema';
 import { createLogger } from '@shared/utils/logger';
 import { initializeDatabase } from '@infrastructure/database/postgresql/connection';
@@ -39,13 +40,22 @@ async function bootstrap() {
     const app = createApp();
 
     // Start server
-    app.listen(appConfig.port, () => {
+    const server: Server = app.listen(appConfig.port, () => {
       logger.info(`✅ Server running on http://localhost:${appConfig.port}`);
       logger.info(`📚 API Version: ${appConfig.apiVersion}`);
       logger.info(`🔗 Frontend: ${appConfig.frontendUrl}`);
       logger.info('📊 Database Status:');
       logger.info(`   - PostgreSQL (Knex): ✅ Connected`);
       logger.info(`   - Supabase Client: ${supabaseOk ? '✅' : '⚠️'} ${supabaseOk ? 'Ready' : 'Failed'}`);
+    });
+
+    server.on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EADDRINUSE') {
+        logger.error(`❌ Port ${appConfig.port} is already in use. Stop the existing process or set PORT in backend/.env.`);
+      } else {
+        logger.error('❌ Server startup error', error);
+      }
+      process.exit(1);
     });
   } catch (error) {
     logger.error('💥 Fatal error during bootstrap', error);

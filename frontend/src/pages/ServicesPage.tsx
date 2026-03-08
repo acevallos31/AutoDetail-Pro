@@ -1,380 +1,368 @@
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Wrench, TimerReset, Droplets, Sparkles, Plus, Zap, Shield, Briefcase } from 'lucide-react';
+import { Droplets, Sparkles, Shield, Zap, Briefcase, Clock, DollarSign, Plus, Edit, Trash2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { RootLayout } from '../shared/layouts/RootLayout';
-import { Card, Button } from '../shared';
+import { Card } from '../shared';
 import { colors, spacing, typography, borderRadius, shadows } from '../shared/design/tokens';
-import { CSSProperties } from 'react';
+import { servicesApi, type Service } from '../modules/services';
+import { ServiceFormModal } from './components/ServiceFormModal';
+import type { LucideIcon } from 'lucide-react';
 
-const services = [
-  {
-    name: 'Basic Wash',
-    category: 'Basic',
-    price: '$250',
-    duration: '45 min',
-    description: 'Lavado exterior e interior completo',
-    icon: Droplets,
-    gradient: 'linear-gradient(to bottom right, #dbeafe, #bfdbfe)',
-    iconBg: 'linear-gradient(to bottom right, #3b82f6, #60a5fa)',
-  },
-  {
-    name: 'Premium Detailing',
-    category: 'Premium',
-    price: '$750',
-    duration: '180 min',
-    description: 'Detallado completo con acabados premium',
-    icon: Sparkles,
-    gradient: 'linear-gradient(to bottom right, #fef3c7, #fcd34d)',
-    iconBg: 'linear-gradient(to bottom right, #f59e0b, #fbbf24)',
-  },
-  {
-    name: 'Ceramic Coating',
-    category: 'Special',
-    price: '$1200',
-    duration: '240 min',
-    description: 'Protección cerámica de pintura profesional',
-    icon: Shield,
-    gradient: 'linear-gradient(to bottom right, #a78bfa, #c4b5fd)',
-    iconBg: 'linear-gradient(to bottom right, #8b5cf6, #a78bfa)',
-  },
-  {
-    name: 'Paint Protection',
-    category: 'Premium',
-    price: '$500',
-    duration: '120 min',
-    description: 'Sellado y protección avanzada de pintura',
-    icon: Zap,
-    gradient: 'linear-gradient(to bottom right, #d1fae5, #a7f3d0)',
-    iconBg: 'linear-gradient(to bottom right, #10b981, #34d399)',
-  },
-  {
-    name: 'Interior Vacuum',
-    category: 'Basic',
-    price: '$100',
-    duration: '30 min',
-    description: 'Limpieza profunda de interiores',
-    icon: Briefcase,
-    gradient: 'linear-gradient(to bottom right, #fecaca, #fca5a5)',
-    iconBg: 'linear-gradient(to bottom right, #ef4444, #f87171)',
-  },
-  {
-    name: 'Leather Treatment',
-    category: 'Special',
-    price: '$300',
-    duration: '90 min',
-    description: 'Acondicionamiento y protección de cuero',
-    icon: Wrench,
-    gradient: 'linear-gradient(to bottom right, #e9d5ff, #ddd6fe)',
-    iconBg: 'linear-gradient(to bottom right, #a855f7, #c084fc)',
-  },
+// Map service icons based on name or category
+const getServiceIcon = (serviceName: string): LucideIcon => {
+  const name = serviceName.toLowerCase();
+  if (name.includes('wash') || name.includes('lavado')) return Droplets;
+  if (name.includes('ceramic') || name.includes('ceramica')) return Shield;
+  if (name.includes('protection') || name.includes('protec')) return Zap;
+  if (name.includes('interior') || name.includes('vacuum')) return Briefcase;
+  if (name.includes('leather') || name.includes('cuero')) return Sparkles;
+  if (name.includes('detail')) return Sparkles;
+  return Droplets; // default
+};
+
+const categories = [
+  { label: 'Todos', value: 'all', id: null },
 ];
 
 export const ServicesPage = () => {
-  const headerLabelStyles: CSSProperties = {
-    display: 'inline-flex',
-    marginBottom: spacing.sm,
-    padding: '6px 10px',
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.infoBg,
-    color: colors.primaryDark,
-    fontSize: typography.fontSize.xs,
-    fontWeight: 700,
-    letterSpacing: '0.02em',
+  const figmaBlue = '#2563eb';
+  
+  // State management
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [hoveredServiceId, setHoveredServiceId] = useState<number | null>(null);
+  
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+
+  // Fetch services on mount and when category changes
+  useEffect(() => {
+    loadServices();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]);
+
+  const loadServices = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const params = selectedCategory ? { category_id: selectedCategory } : undefined;
+      const data = await servicesApi.getAll(params);
+      
+      setServices(data);
+    } catch (err: any) {
+      console.error('Error loading services:', err);
+      setError(err.response?.data?.error?.message || 'Error al cargar servicios. Intenta nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const titleStyles: CSSProperties = {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: 700,
-    fontFamily: typography.fontFamily.display,
-    letterSpacing: '-0.02em',
-    color: colors.textDark,
-    margin: 0,
+  const handleDelete = async (id: number) => {
+    if (!confirm('¿Estás seguro de eliminar este servicio?')) return;
+    
+    try {
+      await servicesApi.delete(id);
+      // Remove from local state
+      setServices(prev => prev.filter(s => s.id !== id));
+    } catch (err: any) {
+      console.error('Error deleting service:', err);
+      alert(err.response?.data?.error?.message || 'Error al eliminar servicio');
+    }
   };
 
-  const subtitleStyles: CSSProperties = {
-    fontSize: typography.fontSize.base,
-    color: colors.textMuted,
-    margin: `${spacing.sm} 0 0 0`,
+  const handleOpenCreateModal = () => {
+    setEditingService(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (service: Service) => {
+    setEditingService(service);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingService(null);
+  };
+
+  const handleFormSuccess = () => {
+    loadServices(); // Reload services after create/update
+  };
+
+  const filteredServices = useMemo(() => {
+    return services.filter(s => s.is_active);
+  }, [services]);
+
+  const getCategoryBadge = (categoryName: string | undefined) => {
+    if (!categoryName) return { label: 'Sin Categoria', bg: '#e5e7eb', color: '#374151' };
+    
+    const name = categoryName.toLowerCase();
+    if (name.includes('premium')) return { label: 'Premium', bg: '#fef3c7', color: '#92400e' };
+    if (name.includes('special') || name.includes('especial')) return { label: 'Special', bg: '#f3e8ff', color: '#6b21a8' };
+    if (name.includes('basic') || name.includes('basico')) return { label: 'Basic', bg: '#dbeafe', color: '#1e40af' };
+    
+    return { label: categoryName, bg: '#e5e7eb', color: '#374151' };
+  };
+
+  const getIconGradient = (categoryName: string | undefined) => {
+    if (!categoryName) return 'linear-gradient(135deg, #6b7280, #9ca3af)';
+    
+    const name = categoryName.toLowerCase();
+    if (name.includes('premium')) return 'linear-gradient(135deg, #f59e0b, #fb923c)';
+    if (name.includes('special') || name.includes('especial')) return 'linear-gradient(135deg, #a855f7, #ec4899)';
+    return 'linear-gradient(135deg, #3b82f6, #22d3ee)';
   };
 
   return (
     <RootLayout>
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <span style={headerLabelStyles}>CATÁLOGO DE SERVICIOS</span>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              gap: spacing.lg,
-              marginTop: spacing.lg,
-              flexWrap: 'wrap',
-            }}
-          >
-            <div>
-              <h2 style={titleStyles}>Servicios Disponibles</h2>
-              <p style={subtitleStyles}>Explora nuestro completo menú de servicios de detallado automotriz</p>
-            </div>
-            <motion.button
-              whileHover={{ y: -2 }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: spacing.sm,
-                paddingLeft: spacing.lg,
-                paddingRight: spacing.lg,
-                paddingTop: spacing.md,
-                paddingBottom: spacing.md,
-                background: 'linear-gradient(to right, #0284c7, #06b6d4)',
-                color: colors.textWhite,
-                border: 'none',
-                borderRadius: borderRadius.lg,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: typography.fontSize.sm,
-                boxShadow: shadows.glow,
-                transition: 'all 200ms ease',
-              }}
-            >
-              <Plus size={16} />
-              Nuevo servicio
-            </motion.button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.lg, flexWrap: 'wrap' }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: typography.fontSize['3xl'], color: colors.textDark, fontFamily: typography.fontFamily.display }}>Catalogo de Servicios</h2>
+            <p style={{ margin: `${spacing.sm} 0 0 0`, color: colors.textLight }}>Gestiona todos los servicios de autodetailing con enfoque comercial.</p>
           </div>
-        </motion.div>
-
-        {/* Category Summary */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: spacing.lg,
-          }}
-        >
-          {[
-            { name: 'Básicos', count: 2, color: '#3b82f6' },
-            { name: 'Premium', count: 2, color: '#f59e0b' },
-            { name: 'Especiales', count: 2, color: '#8b5cf6' },
-          ].map((cat, idx) => (
-            <motion.div
-              key={cat.name}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + idx * 0.05 }}
-              style={{
-                padding: spacing.lg,
-                background: colors.background,
-                border: `1px solid ${colors.border}`,
-                borderRadius: borderRadius.lg,
-                textAlign: 'center',
-              }}
-            >
-              <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: borderRadius.lg,
-                  background: `${cat.color}15`,
-                  margin: `0 auto ${spacing.md} auto`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <span style={{ color: cat.color, fontWeight: 700, fontSize: typography.fontSize.lg }}>
-                  {cat.count}
-                </span>
-              </div>
-              <p style={{ margin: 0, fontSize: typography.fontSize.sm, color: colors.textMuted }}>
-                {cat.name}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Services Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: spacing.lg,
-          }}
-        >
-          {services.map((service, idx) => {
-            const Icon = service.icon;
-            return (
-              <motion.div
-                key={service.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.08 }}
-                style={{
-                  background: service.gradient,
-                  border: `1px solid rgba(255,255,255,0.5)`,
-                  borderRadius: borderRadius.xl,
-                  padding: spacing.xl,
-                  cursor: 'pointer',
-                  transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: shadows.sm,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = shadows.lg;
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = shadows.sm;
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                {/* Header */}
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: spacing.lg,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: borderRadius.lg,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: service.iconBg,
-                    }}
-                  >
-                    <Icon size={24} color={colors.textWhite} />
-                  </div>
-                  <span
-                    style={{
-                      fontSize: typography.fontSize.xs,
-                      color: colors.textDark,
-                      background: 'rgba(255,255,255,0.7)',
-                      padding: `4px ${spacing.sm}`,
-                      borderRadius: borderRadius.full,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {service.category}
-                  </span>
-                </div>
-
-                {/* Content */}
-                <h3
-                  style={{
-                    margin: 0,
-                    fontSize: typography.fontSize.lg,
-                    fontWeight: 700,
-                    fontFamily: typography.fontFamily.display,
-                    color: colors.textDark,
-                    marginBottom: spacing.sm,
-                  }}
-                >
-                  {service.name}
-                </h3>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: typography.fontSize.sm,
-                    color: colors.textDark,
-                    opacity: 0.8,
-                    marginBottom: spacing.lg,
-                  }}
-                >
-                  {service.description}
-                </p>
-
-                {/* Details */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gap: spacing.sm,
-                    marginBottom: spacing.lg,
-                    paddingBottom: spacing.lg,
-                    borderBottom: '1px solid rgba(255,255,255,0.3)',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      color: colors.textDark,
-                      fontSize: typography.fontSize.sm,
-                    }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: spacing.xs, opacity: 0.8 }}>
-                      <Droplets size={14} />
-                      Precio
-                    </span>
-                    <strong style={{ fontSize: typography.fontSize.base }}>{service.price}</strong>
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      color: colors.textDark,
-                      fontSize: typography.fontSize.sm,
-                    }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: spacing.xs, opacity: 0.8 }}>
-                      <TimerReset size={14} />
-                      Duración
-                    </span>
-                    <strong style={{ fontSize: typography.fontSize.base }}>{service.duration}</strong>
-                  </div>
-                </div>
-
-                {/* Button */}
-                <motion.button
-                  whileHover={{ y: -2 }}
-                  style={{
-                    width: '100%',
-                    border: 'none',
-                    background: 'rgba(255,255,255,0.8)',
-                    color: colors.textDark,
-                    borderRadius: borderRadius.lg,
-                    padding: spacing.md,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontSize: typography.fontSize.sm,
-                    transition: 'all 200ms ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.8)';
-                  }}
-                >
-                  Ver detalle
-                </motion.button>
-              </motion.div>
-            );
-          })}
+          <motion.button
+            whileHover={{ y: -2, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleOpenCreateModal}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: spacing.sm, border: 'none', borderRadius: borderRadius.lg, padding: `${spacing.md} ${spacing.lg}`, background: 'linear-gradient(135deg, #0284c7, #06b6d4)', color: colors.textWhite, fontWeight: 700, cursor: 'pointer', boxShadow: shadows.glow }}
+          >
+            <motion.span whileHover={{ rotate: 90 }} transition={{ duration: 0.22 }} style={{ display: 'inline-flex' }}>
+              <Plus size={16} />
+            </motion.span>
+            Nuevo Servicio
+          </motion.button>
         </div>
 
-        {/* Info Card */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <Card variant="elevated">
-            <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
-              <Sparkles size={20} color={colors.primary} />
-              <p style={{ margin: 0, color: colors.textLight }}>
-                Conecta esta vista al endpoint <code>/api/v1/services</code> para cargar servicios dinámicamente desde la base de datos
-              </p>
+        {/* Category Filter */}
+        <Card variant="elevated">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: spacing.sm, alignItems: 'center' }}>
+            <span style={{ color: colors.textLight, fontSize: typography.fontSize.sm, fontWeight: 700 }}>Categoria:</span>
+            {categories.map((category) => (
+              <button
+                key={category.value}
+                onClick={() => setSelectedCategory(category.id)}
+                disabled={isLoading}
+                style={{
+                  border: 'none',
+                  borderRadius: borderRadius.lg,
+                  padding: `${spacing.sm} ${spacing.md}`,
+                  fontWeight: 700,
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  opacity: isLoading ? 0.6 : 1,
+                  color: selectedCategory === category.id ? colors.textWhite : colors.textLight,
+                  background: selectedCategory === category.id ? 'linear-gradient(135deg, #0284c7, #06b6d4)' : colors.backgroundLighter,
+                }}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              style={{ textAlign: 'center' }}
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                style={{ display: 'inline-block' }}
+              >
+                <Loader2 size={48} color={figmaBlue} />
+              </motion.div>
+              <p style={{ marginTop: spacing.md, color: colors.textLight }}>Cargando servicios...</p>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {!isLoading && error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card variant="elevated" style={{ borderColor: '#fca5a5', background: '#fef2f2' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: spacing.md, padding: spacing.xl }}>
+                <AlertCircle size={48} color="#dc2626" />
+                <div style={{ textAlign: 'center' }}>
+                  <h3 style={{ margin: 0, color: '#b91c1c', fontFamily: typography.fontFamily.display }}>Error al cargar servicios</h3>
+                  <p style={{ margin: `${spacing.sm} 0 0 0`, color: '#991b1b' }}>{error}</p>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={loadServices}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: spacing.sm,
+                    border: 'none',
+                    borderRadius: borderRadius.lg,
+                    padding: `${spacing.sm} ${spacing.lg}`,
+                    background: '#dc2626',
+                    color: colors.textWhite,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <RefreshCw size={16} />
+                  Reintentar
+                </motion.button>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !error && filteredServices.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card variant="elevated">
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: spacing.md, padding: spacing.xl }}>
+                <Briefcase size={48} color={colors.textLight} />
+                <div style={{ textAlign: 'center' }}>
+                  <h3 style={{ margin: 0, color: colors.textDark, fontFamily: typography.fontFamily.display }}>No hay servicios disponibles</h3>
+                  <p style={{ margin: `${spacing.sm} 0 0 0`, color: colors.textLight }}>Crea tu primer servicio para comenzar.</p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Services Grid */}
+        {!isLoading && !error && filteredServices.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: spacing.lg }}>
+            {filteredServices.map((service, index) => {
+              const Icon = getServiceIcon(service.name);
+              const badge = getCategoryBadge(service.category_name);
+              return (
+                <motion.div
+                  key={service.id}
+                  initial={{ opacity: 0, y: 22, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: index * 0.07 }}
+                  whileHover={{
+                    y: -10,
+                    scale: 1.015,
+                  }}
+                  onHoverStart={() => setHoveredServiceId(service.id)}
+                  onHoverEnd={() => setHoveredServiceId(null)}
+                  style={{ borderRadius: borderRadius.xl }}
+                >
+                  <Card
+                    variant="elevated"
+                    style={{
+                      boxShadow:
+                        hoveredServiceId === service.id
+                          ? '0 34px 52px -30px rgba(2, 132, 199, 0.38), 0 16px 28px -20px rgba(15, 23, 42, 0.34)'
+                          : shadows.lg,
+                      borderColor: hoveredServiceId === service.id ? '#bfdbfe' : colors.border,
+                      transition: 'box-shadow 220ms ease, border-color 220ms ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 0.6 }} style={{ width: '52px', height: '52px', borderRadius: borderRadius.xl, background: getIconGradient(service.category_name), display: 'grid', placeItems: 'center', boxShadow: shadows.lg }}>
+                          <Icon size={24} color={colors.textWhite} />
+                        </motion.div>
+                        <span style={{ fontSize: typography.fontSize.xs, padding: `3px ${spacing.sm}`, borderRadius: borderRadius.full, fontWeight: 700, background: badge.bg, color: badge.color }}>
+                          {badge.label}
+                        </span>
+                      </div>
+
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: typography.fontSize.lg, color: hoveredServiceId === service.id ? figmaBlue : colors.textDark, transition: 'color 180ms ease', fontFamily: typography.fontFamily.display }}>{service.name}</h3>
+                        <p style={{ margin: `${spacing.sm} 0 0 0`, color: colors.textLight, fontSize: typography.fontSize.sm }}>{service.description || 'Sin descripción'}</p>
+                      </div>
+
+                      <div style={{ display: 'grid', gap: spacing.sm }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: spacing.sm, borderRadius: borderRadius.lg, background: colors.backgroundLighter }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: spacing.xs, fontSize: typography.fontSize.sm, color: colors.textLight }}><Clock size={14} /> Duracion</span>
+                          <strong style={{ color: colors.textDark }}>{service.estimated_duration_minutes} min</strong>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: spacing.sm, borderRadius: borderRadius.lg, background: '#ecfdf5', border: '1px solid #bbf7d0' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: spacing.xs, fontSize: typography.fontSize.sm, color: '#047857' }}><DollarSign size={14} /> Precio</span>
+                          <strong style={{ color: '#047857', fontSize: typography.fontSize.lg }}>${service.base_price}</strong>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: spacing.sm }}>
+                        <motion.button
+                          whileHover={{ y: -2, scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleOpenEditModal(service)}
+                          style={{ flex: 1, border: 'none', borderRadius: borderRadius.lg, padding: `${spacing.sm} ${spacing.md}`, background: colors.primary, color: colors.textWhite, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: spacing.xs, boxShadow: shadows.md }}
+                        >
+                          <motion.span whileHover={{ rotate: -12 }} transition={{ duration: 0.2 }} style={{ display: 'inline-flex' }}>
+                            <Edit size={14} />
+                          </motion.span>
+                          Editar
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ y: -2, scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => handleDelete(service.id)}
+                          style={{ border: 'none', borderRadius: borderRadius.lg, padding: `${spacing.sm} ${spacing.md}`, background: '#fee2e2', color: '#b91c1c', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', justifyContent: 'center', alignItems: 'center' }}
+                        >
+                          <motion.span whileHover={{ rotate: 12 }} transition={{ duration: 0.2 }} style={{ display: 'inline-flex' }}>
+                            <Trash2 size={14} />
+                          </motion.span>
+                        </motion.button>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Statistics Panel */}
+        {!isLoading && !error && filteredServices.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+            <div style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: colors.textWhite, borderRadius: borderRadius.xl, padding: spacing.xl, boxShadow: shadows.xl }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: spacing.lg }}>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontSize: typography.fontSize['2xl'], fontFamily: typography.fontFamily.display }}>{filteredServices.length}</p>
+                  <p style={{ margin: `${spacing.xs} 0 0 0`, color: '#cbd5e1', fontSize: typography.fontSize.sm }}>Total Servicios</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontSize: typography.fontSize['2xl'], fontFamily: typography.fontFamily.display }}>${filteredServices.reduce((acc, item) => acc + Number(item.base_price), 0).toFixed(0)}</p>
+                  <p style={{ margin: `${spacing.xs} 0 0 0`, color: '#cbd5e1', fontSize: typography.fontSize.sm }}>Valor Total</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontSize: typography.fontSize['2xl'], fontFamily: typography.fontFamily.display }}>{filteredServices.length > 0 ? Math.round(filteredServices.reduce((acc, item) => acc + Number(item.estimated_duration_minutes), 0) / filteredServices.length) : 0} min</p>
+                  <p style={{ margin: `${spacing.xs} 0 0 0`, color: '#cbd5e1', fontSize: typography.fontSize.sm }}>Duracion Promedio</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontSize: typography.fontSize['2xl'], fontFamily: typography.fontFamily.display }}>${filteredServices.length > 0 ? Math.round(filteredServices.reduce((acc, item) => acc + Number(item.base_price), 0) / filteredServices.length) : 0}</p>
+                  <p style={{ margin: `${spacing.xs} 0 0 0`, color: '#cbd5e1', fontSize: typography.fontSize.sm }}>Precio Promedio</p>
+                </div>
+              </div>
             </div>
-          </Card>
-        </motion.div>
+          </motion.div>
+        )}
       </div>
+
+      {/* Service Form Modal */}
+      <ServiceFormModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSuccess={handleFormSuccess}
+        service={editingService}
+      />
     </RootLayout>
   );
 };

@@ -21,6 +21,10 @@ export const Button = ({
   rightIcon,
   disabled,
   className = '',
+  onMouseEnter,
+  onMouseLeave,
+  onMouseDown,
+  onMouseUp,
   ...props
 }: ButtonProps) => {
   const getVariantStyles = (): CSSProperties => {
@@ -55,6 +59,8 @@ export const Button = ({
     return sizes[size];
   };
 
+  const baseVariantStyles = getVariantStyles();
+
   const baseStyles: CSSProperties = {
     fontWeight: 600,
     fontFamily: typography.fontFamily?.display,
@@ -68,17 +74,61 @@ export const Button = ({
     justifyContent: 'center',
     gap: spacing.sm,
     whiteSpace: 'nowrap',
-    transition: transitions.colors,
+    transition: 'all 180ms cubic-bezier(0.4, 0, 0.2, 1)',
     width: isFullWidth ? '100%' : 'auto',
     outline: 'none',
     backdropFilter: variant === 'secondary' ? 'blur(4px)' : undefined,
+    transform: 'translateY(0) scale(1)',
+  };
+
+  const applyIdleState = (element: HTMLButtonElement) => {
+    element.style.transform = 'translateY(0) scale(1)';
+    element.style.boxShadow = String(baseVariantStyles.boxShadow || shadows.none);
+  };
+
+  const applyHoverState = (element: HTMLButtonElement) => {
+    element.style.transform = 'translateY(-1px) scale(1.01)';
+    if (variant === 'primary') {
+      element.style.boxShadow = shadows.lg;
+    } else if (variant === 'secondary') {
+      element.style.boxShadow = shadows.md;
+    }
+  };
+
+  const applyPressedState = (element: HTMLButtonElement) => {
+    element.style.transform = 'translateY(0) scale(0.99)';
+    if (variant === 'primary') {
+      element.style.boxShadow = shadows.md;
+    }
   };
 
   return (
     <button
       disabled={disabled || isLoading}
-      style={{ ...baseStyles, ...getVariantStyles(), ...getSizeStyles() }}
+      style={{ ...baseStyles, ...baseVariantStyles, ...getSizeStyles() }}
       className={className}
+      onMouseEnter={(event) => {
+        if (!disabled && !isLoading) {
+          applyHoverState(event.currentTarget);
+        }
+        onMouseEnter?.(event);
+      }}
+      onMouseLeave={(event) => {
+        applyIdleState(event.currentTarget);
+        onMouseLeave?.(event);
+      }}
+      onMouseDown={(event) => {
+        if (!disabled && !isLoading) {
+          applyPressedState(event.currentTarget);
+        }
+        onMouseDown?.(event);
+      }}
+      onMouseUp={(event) => {
+        if (!disabled && !isLoading) {
+          applyHoverState(event.currentTarget);
+        }
+        onMouseUp?.(event);
+      }}
       {...props}
     >
       {leftIcon && <span style={{ flexShrink: 0 }}>{leftIcon}</span>}

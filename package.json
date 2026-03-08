@@ -1,0 +1,23 @@
+{
+  "name": "autodetail-pro-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Workspace scripts for AutoDetail Pro",
+  "scripts": {
+    "dev": "concurrently -k -n backend,frontend -c green,cyan \"npm.cmd --prefix backend run dev\" \"npm.cmd --prefix frontend run dev\"",
+    "dev:clean": "npm.cmd run kill:3000 && npm.cmd run kill:5173 && npm.cmd run dev",
+    "dev:backend": "npm.cmd --prefix backend run dev",
+    "dev:backend:clean": "npm.cmd run kill:3000 && npm.cmd run dev:backend",
+    "dev:frontend": "npm.cmd --prefix frontend run dev",
+    "dev:frontend:clean": "npm.cmd run kill:5173 && npm.cmd run dev:frontend",
+    "kill:3000": "kill-port 3000",
+    "kill:5173": "kill-port 5173",
+    "build": "npm.cmd --prefix backend run build && npm.cmd --prefix frontend run build",
+    "build:backend": "npm.cmd --prefix backend run build",
+    "build:frontend": "npm.cmd --prefix frontend run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "kill-port": "^2.0.1"
+  }
+}
